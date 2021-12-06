@@ -1,26 +1,37 @@
-import WeatherDB
-from WeatherDB import Weather
 import datetime
+import peewee
 
-Weather.create_table()
+base = peewee.SqliteDatabase("Weather.db")
+cur = base.cursor()
+
+
+class Weather(peewee.Model):
+    day = peewee.DateField()
+    rainfall = peewee.CharField()
+    night_t = peewee.CharField()
+    day_t = peewee.CharField()
+    update_time = peewee.DateTimeField()
+
+    class Meta:
+        database = base
 
 
 class InteractorWithDB:
     def __init__(self, dbname):
         self.db = dbname
-    
+
     def save(self, data_to_save):
         # print('save')
         for day in data_to_save:
             day['update_time'] = datetime.datetime.now()
         # print(data)
         self.db.insert_many(data_to_save).execute()
-    
+
     def get_from_db(self, start, finish, first):
         data_from_db_res = []
         a = start.split('-')
         b = finish.split('-')
-        
+
         aa = datetime.date(int(a[0]), int(a[1]), int(a[2]))
         bb = datetime.date(int(b[0]), int(b[1]), int(b[2]))
         if first:
@@ -30,7 +41,7 @@ class InteractorWithDB:
         else:
             delta = str(bb - aa)
             delta = int(delta.split()[0])
-        
+
         for day in range(delta + 1):
             data_from_db = {}
             try:
@@ -52,3 +63,6 @@ class InteractorWithDB:
                     aa += datetime.timedelta(days=1)
 
         return data_from_db_res
+
+
+Weather.create_table()
